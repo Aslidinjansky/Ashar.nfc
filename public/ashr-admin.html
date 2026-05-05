@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin — Ashar.nfc</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/main.css">
+  <link rel="stylesheet" href="/css/admin.css">
+</head>
+<body>
+<div class="app-wrapper">
+
+  <!-- LOGIN SCREEN -->
+  <div id="adminLoginScreen">
+    <div class="admin-login-wrap">
+      <div class="admin-login-logo">ashar.nfc</div>
+      <div class="admin-login-sub">Admin Panel</div>
+      <div class="admin-login-card">
+        <form class="admin-login-form" id="adminLoginForm" onsubmit="adminLogin(event)">
+          <div class="form-group">
+            <label>Username</label>
+            <input type="text" class="form-input" id="adminUser" placeholder="admin" required>
+          </div>
+          <div class="form-group">
+            <label>Password</label>
+            <input type="password" class="form-input" id="adminPass" placeholder="Password" required>
+          </div>
+          <div id="adminLoginErr" style="color:#ef4444;font-size:13px;display:none;"></div>
+          <button type="submit" class="btn-gold" style="width:100%;justify-content:center;">Sign In</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- ADMIN PANEL -->
+  <div id="adminPanel" style="display:none;" class="admin-layout">
+
+    <header class="admin-header">
+      <div class="admin-logo">
+        ashar.nfc
+        <span class="admin-logo-badge">ADMIN</span>
+      </div>
+      <button onclick="adminLogout()" style="background:none;border:none;color:rgba(255,255,255,0.4);cursor:pointer;padding:6px;font-size:13px;font-family:'Inter',sans-serif;">
+        Logout
+      </button>
+    </header>
+
+    <nav class="admin-tab-nav">
+      <button class="admin-tab-btn active" onclick="adminTab('dashboard', this)">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+        Dashboard
+      </button>
+      <button class="admin-tab-btn" onclick="adminTab('applications', this)" id="appTabBtn">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        Applications
+      </button>
+      <button class="admin-tab-btn" onclick="adminTab('users', this)">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+        Users
+      </button>
+      <button class="admin-tab-btn" onclick="adminTab('notifications', this)">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+        Notifs
+      </button>
+      <button class="admin-tab-btn" onclick="adminTab('ads', this)">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+        Ads
+      </button>
+      <button class="admin-tab-btn" onclick="adminTab('messages', this)" id="msgTabBtn">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+        Messages
+      </button>
+    </nav>
+
+    <!-- DASHBOARD TAB -->
+    <div class="admin-tab active" id="atab-dashboard">
+      <div class="stats-grid" id="statsGrid">
+        <div class="stat-card"><div class="stat-card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/></svg></div><div class="stat-card-num" id="stat-pending">…</div><div class="stat-card-label">Pending Apps</div></div>
+        <div class="stat-card"><div class="stat-card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></div><div class="stat-card-num" id="stat-users">…</div><div class="stat-card-label">Total Users</div></div>
+        <div class="stat-card"><div class="stat-card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg></div><div class="stat-card-num" id="stat-msgs">…</div><div class="stat-card-label">Support Threads</div></div>
+        <div class="stat-card"><div class="stat-card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg></div><div class="stat-card-num" id="stat-ads">…</div><div class="stat-card-label">Active Ads</div></div>
+      </div>
+      <div class="admin-section-card">
+        <div class="admin-section-title">Quick Actions</div>
+        <div style="display:flex;flex-direction:column;gap:10px;">
+          <button class="btn-gold" onclick="adminTab('applications', document.querySelector('[onclick*=applications]'))" style="justify-content:center;">Review Applications</button>
+          <button class="btn-outline" onclick="adminTab('notifications', document.querySelector('[onclick*=notifications]'))" style="justify-content:center;">Send Notification</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- APPLICATIONS TAB -->
+    <div class="admin-tab" id="atab-applications">
+      <div class="admin-section-card">
+        <div class="admin-section-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/></svg>
+          Applications
+        </div>
+        <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;">
+          <button class="action-btn action-view" onclick="loadApplications('pending')" id="filterPending">Pending</button>
+          <button class="action-btn action-view" style="opacity:0.6" onclick="loadApplications('approved')">Approved</button>
+          <button class="action-btn action-reject" style="opacity:0.6" onclick="loadApplications('rejected')">Rejected</button>
+          <button class="btn-ghost" style="padding:5px 10px;font-size:12px;" onclick="loadApplications('')">All</button>
+        </div>
+        <div id="appTable"></div>
+      </div>
+    </div>
+
+    <!-- USERS TAB -->
+    <div class="admin-tab" id="atab-users">
+      <div class="admin-section-card">
+        <div class="admin-section-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+          Users
+        </div>
+        <div id="usersTable"></div>
+      </div>
+    </div>
+
+    <!-- NOTIFICATIONS TAB -->
+    <div class="admin-tab" id="atab-notifications">
+      <div class="admin-section-card">
+        <div class="admin-section-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+          Send Notification
+        </div>
+        <form class="notif-form" id="notifForm" onsubmit="sendNotification(event)">
+          <div class="form-group">
+            <label>Target</label>
+            <select class="form-input" id="notifTarget">
+              <option value="">📢 Broadcast (All Users)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Title *</label>
+            <input type="text" class="form-input" id="notifTitle" placeholder="Notification title" required>
+          </div>
+          <div class="form-group">
+            <label>Message *</label>
+            <textarea class="form-input" id="notifMessage" rows="3" placeholder="Notification message" required></textarea>
+          </div>
+          <div class="form-group">
+            <label>Media (Optional)</label>
+            <label class="upload-area" style="padding:16px;">
+              <input type="file" id="notifMedia" accept="image/*,video/mp4">
+              <div class="upload-text" style="font-size:13px;">Tap to attach image/video</div>
+            </label>
+          </div>
+          <button type="submit" class="btn-gold" style="width:100%;justify-content:center;">Send Notification</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- ADS TAB -->
+    <div class="admin-tab" id="atab-ads">
+      <div class="admin-section-card">
+        <div class="admin-section-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+          Create Ad
+        </div>
+        <form id="adForm" onsubmit="createAd(event)" style="display:flex;flex-direction:column;gap:14px;">
+          <div class="form-group">
+            <label>Target User (leave blank for all)</label>
+            <select class="form-input" id="adTarget">
+              <option value="">All Users</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Media File *</label>
+            <label class="upload-area" style="padding:16px;">
+              <input type="file" id="adMedia" accept="image/*,video/mp4" required>
+              <div class="upload-text" style="font-size:13px;">Tap to upload image or video</div>
+            </label>
+          </div>
+          <div class="form-group">
+            <label>Caption</label>
+            <input type="text" class="form-input" id="adCaption" placeholder="Ad caption">
+          </div>
+          <button type="submit" class="btn-gold" style="width:100%;justify-content:center;">Create Ad</button>
+        </form>
+      </div>
+
+      <div class="admin-section-card">
+        <div class="admin-section-title">All Ads</div>
+        <div id="adminAdsList"></div>
+      </div>
+    </div>
+
+    <!-- MESSAGES TAB -->
+    <div class="admin-tab" id="atab-messages">
+      <div id="messageThreads"></div>
+      <div id="chatModal" style="display:none;">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
+          <button onclick="closeChatModal()" style="background:none;border:none;color:var(--text-secondary);cursor:pointer;padding:4px;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+          </button>
+          <span id="chatModalUser" style="font-weight:600;font-size:16px;"></span>
+        </div>
+        <div class="admin-chat">
+          <div class="admin-chat-msgs" id="adminChatMsgs"></div>
+          <div class="admin-chat-input-row">
+            <input type="text" class="admin-chat-input" id="adminChatInput" placeholder="Type reply…" onkeydown="if(event.key==='Enter')sendAdminReply()">
+            <button class="admin-chat-send" onclick="sendAdminReply()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- User detail modal -->
+<div id="userModal" class="modal-overlay" style="display:none;" onclick="if(event.target===this)closeUserModal()">
+  <div class="modal-sheet" style="max-width:430px;">
+    <div class="modal-header">
+      <div class="modal-title">User Details</div>
+      <button class="modal-close" onclick="closeUserModal()">×</button>
+    </div>
+    <div id="userModalBody"></div>
+  </div>
+</div>
+
+<!-- App modal -->
+<div id="appModal" class="modal-overlay" style="display:none;" onclick="if(event.target===this)closeAppModal()">
+  <div class="modal-sheet" style="max-width:430px;">
+    <div class="modal-header">
+      <div class="modal-title">Application Details</div>
+      <button class="modal-close" onclick="closeAppModal()">×</button>
+    </div>
+    <div id="appModalBody"></div>
+  </div>
+</div>
+
+<div id="toast" class="toast"></div>
+<script src="/js/admin.js"></script>
+</body>
+</html>

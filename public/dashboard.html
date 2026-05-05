@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard — Ashar.nfc</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/main.css">
+  <link rel="stylesheet" href="/css/dashboard.css">
+</head>
+<body>
+<div class="app-wrapper">
+  <div class="dashboard-layout">
+
+    <!-- Header -->
+    <header class="dash-header">
+      <div class="dash-logo">ashar.nfc</div>
+      <div class="dash-user">
+        <div id="headerAvatar" class="dash-avatar-placeholder">?</div>
+        <span id="headerName" class="dash-username">Loading…</span>
+        <button onclick="logout()" title="Logout" style="background:none;border:none;color:rgba(255,255,255,0.4);cursor:pointer;padding:6px;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- Tabs -->
+    <nav class="tab-nav" id="tabNav">
+      <button class="tab-btn active" onclick="switchTab('profile', this)">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        Profile
+      </button>
+      <button class="tab-btn" onclick="switchTab('links', this)">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg>
+        Links
+      </button>
+      <button class="tab-btn" onclick="switchTab('notifications', this)" id="notifTabBtn">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+        Notifs
+      </button>
+      <button class="tab-btn" onclick="switchTab('messages', this)">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+        Messages
+      </button>
+      <button class="tab-btn" onclick="switchTab('ads', this)">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 9h6M9 12h6M9 15h4"/></svg>
+        Ads
+      </button>
+    </nav>
+
+    <!-- PROFILE TAB -->
+    <div class="tab-content active" id="tab-profile">
+      <div id="profilePreview"></div>
+
+      <!-- Edit Profile -->
+      <div class="form-section">
+        <div class="form-section-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          Edit Profile
+        </div>
+        <div style="display:flex;flex-direction:column;gap:14px;">
+          <div class="form-group">
+            <label>Display Name</label>
+            <input type="text" class="form-input" id="editName" placeholder="Your display name">
+          </div>
+          <div class="form-group">
+            <label>Bio</label>
+            <textarea class="form-input" id="editBio" placeholder="Tell people about yourself…" rows="3"></textarea>
+          </div>
+          <div class="form-group">
+            <label>Background Color</label>
+            <div style="display:flex;gap:10px;align-items:center;">
+              <input type="color" id="editBgColor" value="#0a0a0f" style="width:48px;height:40px;border:none;border-radius:8px;background:none;cursor:pointer;padding:2px;">
+              <span id="editBgColorVal" style="color:var(--text-secondary);font-size:13px;">#0a0a0f</span>
+            </div>
+          </div>
+          <button class="btn-gold" onclick="saveProfile()" style="width:100%;justify-content:center;">Save Profile</button>
+        </div>
+      </div>
+
+      <!-- Avatar Upload -->
+      <div class="form-section">
+        <div class="form-section-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="7" r="4"/><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/></svg>
+          Profile Photo
+        </div>
+        <label class="upload-area" id="avatarUploadArea">
+          <input type="file" accept="image/*" onchange="uploadAvatar(this)">
+          <div class="upload-icon">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+          </div>
+          <div class="upload-text">Tap to upload photo</div>
+          <div class="upload-hint">JPEG, PNG, WebP · max 5MB</div>
+        </label>
+      </div>
+
+      <!-- Background Image Upload -->
+      <div class="form-section">
+        <div class="form-section-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+          Background Image
+        </div>
+        <label class="upload-area">
+          <input type="file" accept="image/*" onchange="uploadBackground(this)">
+          <div class="upload-icon">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>
+          </div>
+          <div class="upload-text">Tap to set background image</div>
+          <div class="upload-hint">JPEG, PNG, WebP · max 5MB</div>
+        </label>
+        <p style="font-size:12px;color:var(--text-secondary);margin-top:8px;">Tip: Background image overrides background color on your profile.</p>
+      </div>
+
+      <!-- Profile link -->
+      <div style="text-align:center;margin-bottom:20px;">
+        <a id="profileLink" href="#" target="_blank" style="color:var(--accent-gold);font-size:14px;text-decoration:none;display:inline-flex;align-items:center;gap:6px;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+          View my public profile
+        </a>
+      </div>
+    </div>
+
+    <!-- LINKS TAB -->
+    <div class="tab-content" id="tab-links">
+      <div class="form-section">
+        <div class="form-section-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg>
+          Social Links
+        </div>
+        <div class="links-list" id="linksList"></div>
+        <button class="add-link-btn" onclick="showAddLink()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Add Social Link
+        </button>
+
+        <!-- Add link form -->
+        <div id="addLinkForm" style="display:none;margin-top:14px;background:rgba(255,255,255,0.03);border:1px solid var(--border-color);border-radius:var(--radius-sm);padding:14px;">
+          <div style="display:flex;gap:8px;margin-bottom:10px;">
+            <select id="newLinkType" class="link-type-select" style="flex:0 0 130px;">
+              <option value="phone">📞 Phone</option>
+              <option value="whatsapp">💬 WhatsApp</option>
+              <option value="telegram">✈️ Telegram</option>
+              <option value="instagram">📸 Instagram</option>
+              <option value="facebook">👤 Facebook</option>
+              <option value="youtube">▶️ YouTube</option>
+              <option value="tiktok">🎵 TikTok</option>
+              <option value="website">🌐 Website</option>
+              <option value="email">✉️ Email</option>
+              <option value="linkedin">💼 LinkedIn</option>
+            </select>
+            <input type="text" class="form-input" id="newLinkUrl" placeholder="URL or username" style="flex:1;">
+          </div>
+          <div style="display:flex;gap:8px;">
+            <button class="btn-gold" onclick="addLink()" style="flex:1;justify-content:center;padding:10px;">Add</button>
+            <button class="btn-ghost" onclick="document.getElementById('addLinkForm').style.display='none'" style="flex:1;justify-content:center;padding:10px;">Cancel</button>
+          </div>
+        </div>
+
+        <button class="btn-gold" onclick="saveLinks()" style="width:100%;justify-content:center;margin-top:14px;">Save Links</button>
+      </div>
+
+      <!-- Bank Card -->
+      <div class="form-section">
+        <div class="form-section-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+          Bank Card (Optional)
+        </div>
+        <div id="bankCardPreview"></div>
+        <div style="display:flex;flex-direction:column;gap:12px;">
+          <div class="form-group">
+            <label>Cardholder Name</label>
+            <input type="text" class="form-input" id="cardHolder" placeholder="Name on card">
+          </div>
+          <div class="form-group">
+            <label>Last 4 Digits</label>
+            <input type="text" class="form-input" id="cardLast4" placeholder="1234" maxlength="4" pattern="\d{4}">
+          </div>
+          <button class="btn-gold" onclick="saveBankCard()" style="width:100%;justify-content:center;">Save Card</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- NOTIFICATIONS TAB -->
+    <div class="tab-content" id="tab-notifications">
+      <div id="notificationsList">
+        <div style="text-align:center;padding:40px 0;color:var(--text-secondary);">
+          <div class="spinner" style="margin:0 auto 16px;"></div>
+          Loading notifications…
+        </div>
+      </div>
+    </div>
+
+    <!-- MESSAGES TAB -->
+    <div class="tab-content" id="tab-messages">
+      <div class="chat-wrap">
+        <div class="chat-messages" id="chatMessages">
+          <div style="text-align:center;padding:30px 0;color:var(--text-secondary);font-size:14px;">
+            Loading messages…
+          </div>
+        </div>
+        <div class="chat-input-row">
+          <input type="text" class="chat-input" id="chatInput" placeholder="Type a message…" onkeydown="if(event.key==='Enter')sendMessage()">
+          <button class="chat-send-btn" onclick="sendMessage()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ADS TAB -->
+    <div class="tab-content" id="tab-ads">
+      <div id="adsList">
+        <div style="text-align:center;padding:40px 0;color:var(--text-secondary);">
+          <div class="spinner" style="margin:0 auto 16px;"></div>
+          Loading ads…
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div id="toast" class="toast"></div>
+<script src="/js/dashboard.js"></script>
+</body>
+</html>
