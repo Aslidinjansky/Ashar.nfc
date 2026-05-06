@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Ashar.nfc | Profile</title>
+    <link rel="stylesheet" href="/css/style.css" />
+  </head>
+  <body>
+    <div class="page profile-page">
+      <header class="profile-header">
+        <p class="profile-header__eyebrow">ASHAR.NFC</p>
+        <h1 class="profile-header__title">Profile</h1>
+        <p class="profile-header__subtitle">Next-gen NFC presence, refined for every tap.</p>
+      </header>
+
+      <main class="profile-card">
+        <div class="profile-avatar" aria-hidden="true">
+          <div class="profile-avatar__inner" id="profile-avatar-initials">AN</div>
+        </div>
+        <div class="profile-info">
+          <h2 class="profile-name" id="profile-name">Ashar NFC</h2>
+          <p class="profile-role" id="profile-role"></p>
+          <p class="profile-bio" id="profile-bio"></p>
+        </div>
+
+        <button class="profile-action" id="save-contact" type="button">Save Contact</button>
+
+        <section class="profile-social" aria-label="Social links">
+          <h3 class="profile-social__title">Connect</h3>
+          <div class="profile-social__grid" id="profile-social-grid"></div>
+        </section>
+      </main>
+
+      <footer class="profile-footer">
+        <img src="/assets/logo.svg" alt="Ashar.nfc logo" class="profile-footer__logo" />
+        <span class="profile-footer__brand">ASHAR.NFC</span>
+      </footer>
+    </div>
+
+    <script src="/js/profile.js"></script>
+  </body>
+</html>

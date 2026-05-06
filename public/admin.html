@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Ashar.nfc | Admin Dashboard</title>
+    <link rel="stylesheet" href="/css/style.css" />
+  </head>
+  <body>
+    <div class="page admin-page">
+      <header class="admin-header">
+        <p class="admin-header__eyebrow">ASHAR.NFC</p>
+        <h1 class="admin-header__title">Admin Dashboard</h1>
+        <p class="admin-header__subtitle">Securely refine the public NFC profile.</p>
+      </header>
+
+      <main class="admin-grid">
+        <section class="admin-card" id="admin-login">
+          <h2>Admin Access</h2>
+          <form id="admin-login-form" class="admin-grid">
+            <label class="admin-field">
+              Username
+              <input class="admin-input" type="text" name="username" autocomplete="username" required />
+            </label>
+            <label class="admin-field">
+              Password
+              <input
+                class="admin-input"
+                type="password"
+                name="password"
+                autocomplete="current-password"
+                required
+              />
+            </label>
+            <button class="admin-action" type="submit">Sign In</button>
+            <p class="admin-status" id="admin-login-status" aria-live="polite"></p>
+          </form>
+        </section>
+
+        <section class="admin-card admin-card--hidden" id="admin-dashboard">
+          <div class="admin-card__header">
+            <h2>Public Profile</h2>
+            <button class="admin-link-button" type="button" id="admin-logout">Sign out</button>
+          </div>
+          <form id="admin-profile-form" class="admin-grid">
+            <label class="admin-field">
+              Name
+              <input class="admin-input" type="text" name="fullName" required />
+            </label>
+            <label class="admin-field">
+              Job Title
+              <input class="admin-input" type="text" name="jobTitle" />
+            </label>
+            <label class="admin-field">
+              Company
+              <input class="admin-input" type="text" name="company" />
+            </label>
+            <label class="admin-field">
+              Bio
+              <textarea class="admin-textarea" name="bio"></textarea>
+            </label>
+
+            <div class="admin-field">
+              Social Links
+              <label class="admin-field">
+                WhatsApp
+                <input class="admin-input" type="url" name="whatsapp" placeholder="https://wa.me/..." />
+              </label>
+              <label class="admin-field">
+                Telegram
+                <input class="admin-input" type="url" name="telegram" placeholder="https://t.me/..." />
+              </label>
+              <label class="admin-field">
+                LinkedIn
+                <input class="admin-input" type="url" name="linkedin" placeholder="https://linkedin.com/in/..." />
+              </label>
+              <label class="admin-field">
+                Instagram
+                <input class="admin-input" type="url" name="instagram" placeholder="https://instagram.com/..." />
+              </label>
+            </div>
+
+            <button class="admin-action" type="submit">Save Updates</button>
+            <p class="admin-status" id="admin-profile-status" aria-live="polite"></p>
+          </form>
+        </section>
+      </main>
+    </div>
+
+    <script src="/js/admin.js"></script>
+  </body>
+</html>
