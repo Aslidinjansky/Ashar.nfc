@@ -17,26 +17,31 @@ db.exec(`
     phone TEXT,
     city TEXT,
     avatar TEXT,
-    background_color TEXT DEFAULT '#0a0a0f',
+    background_color TEXT DEFAULT '#0b2e24',
     background_image TEXT,
     bio TEXT,
     nfc_product TEXT,
+    role TEXT DEFAULT 'user' CHECK(role IN ('user','admin')),
     status TEXT DEFAULT 'pending' CHECK(status IN ('pending','active','suspended')),
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
   );
 
   CREATE TABLE IF NOT EXISTS social_links (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     type TEXT NOT NULL,
-    url TEXT NOT NULL
+    url TEXT NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
   );
 
   CREATE TABLE IF NOT EXISTS bank_cards (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     user_id INTEGER UNIQUE NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    card_number_encrypted TEXT,
     cardholder_name TEXT NOT NULL,
-    last4 TEXT NOT NULL
+    last4 TEXT NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
   );
 
   CREATE TABLE IF NOT EXISTS notifications (

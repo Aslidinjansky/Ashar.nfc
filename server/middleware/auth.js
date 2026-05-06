@@ -1,33 +1,39 @@
 const jwt = require('jsonwebtoken');
 
-function authMiddleware(req, res, next) {
-  const authHeader = req.headers['authorization'];
-  if (!authHeader) return res.status(401).json({ error: 'No token provided' });
+function getTokenFromRequest(req) {
+  const authHeader = req.headers.authorization || '';
+  if (authHeader.startsWith('Bearer ')) {
+    return authHeader.slice(7).trim();
+  }
+  return authHeader.trim();
+}
 
-  const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : authHeader;
+function requireAuth(req, res, next) {
+  const token = getTokenFromRequest(req);
+  if (!token) return res.status(401).json({ error: 'Authentication required' });
+
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    if (decoded.role === 'admin') return res.status(403).json({ error: 'Forbidden' });
+    if (decoded.role !== 'user') return res.status(403).json({ error: 'User access only' });
     req.user = decoded;
-    next();
-  } catch {
-    res.status(401).json({ error: 'Invalid token' });
+    return next();
+  } catch (error) {
+    return res.status(401).json({ error: 'Invalid or expired token' });
   }
 }
 
-function adminMiddleware(req, res, next) {
-  const authHeader = req.headers['authorization'];
-  if (!authHeader) return res.status(401).json({ error: 'No token provided' });
+function requireAdmin(req, res, next) {
+  const token = getTokenFromRequest(req);
+  if (!token) return res.status(401).json({ error: 'Authentication required' });
 
-  const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : authHeader;
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    if (decoded.role !== 'admin') return res.status(403).json({ error: 'Admin only' });
+    if (decoded.role !== 'admin') return res.status(403).json({ error: 'Admin access only' });
     req.admin = decoded;
-    next();
-  } catch {
-    res.status(401).json({ error: 'Invalid token' });
+    return next();
+  } catch (error) {
+    return res.status(401).json({ error: 'Invalid or expired token' });
   }
 }
 
-module.exports = { authMiddleware, adminMiddleware };
+module.exports = { requireAuth, requireAdmin };
