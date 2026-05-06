@@ -21,7 +21,9 @@ if (saveButton) {
     link.download = 'Ashar-Contact.vcf';
     document.body.appendChild(link);
     link.click();
-    link.remove();
-    URL.revokeObjectURL(url);
+    setTimeout(() => {
+      link.remove();
+      URL.revokeObjectURL(url);
+    }, 0);
   });
 }
