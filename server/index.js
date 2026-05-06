@@ -79,6 +79,12 @@ const apiLimiter = rateLimit({
   message: { error: 'Too many requests. Please slow down.' },
 });
 
+function asyncHandler(handler) {
+  return (req, res, next) => {
+    Promise.resolve(handler(req, res, next)).catch(next);
+  };
+}
+
 async function ensurePublicProfileUserId() {
   const db = await getDb();
   const setting = await db.get('SELECT value FROM settings WHERE key = ?', 'public_profile_user_id');
@@ -129,7 +135,7 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok' });
 });
 
-app.post('/api/auth/register', authLimiter, async (req, res) => {
+app.post('/api/auth/register', authLimiter, asyncHandler(async (req, res) => {
   const { username, email, password, fullName, phone, city, nfcProduct } = req.body || {};
 
   if (!username || !email || !password || !fullName) {
@@ -162,9 +168,9 @@ app.post('/api/auth/register', authLimiter, async (req, res) => {
 
   const token = signToken({ id: result.lastID, role: 'user' });
   return res.status(201).json({ token });
-});
+}));
 
-app.post('/api/auth/login', authLimiter, async (req, res) => {
+app.post('/api/auth/login', authLimiter, asyncHandler(async (req, res) => {
   const { identifier, password } = req.body || {};
   if (!identifier || !password) {
     return res.status(400).json({ error: 'identifier and password are required' });
@@ -192,9 +198,9 @@ app.post('/api/auth/login', authLimiter, async (req, res) => {
 
   const token = signToken({ id: user.id, role: 'user' });
   return res.json({ token });
-});
+}));
 
-app.post('/api/auth/admin/login', authLimiter, async (req, res) => {
+app.post('/api/auth/admin/login', authLimiter, asyncHandler(async (req, res) => {
   const { username, password } = req.body || {};
   if (!username || !password) {
     return res.status(400).json({ error: 'username and password are required' });
@@ -215,9 +221,9 @@ app.post('/api/auth/admin/login', authLimiter, async (req, res) => {
 
   const token = signToken({ role: 'admin', username: adminUsername });
   return res.json({ token });
-});
+}));
 
-app.post('/api/applications', apiLimiter, async (req, res) => {
+app.post('/api/applications', apiLimiter, asyncHandler(async (req, res) => {
   const { fullName, phone, email, whatsapp, city, nfcProduct } = req.body || {};
   if (!fullName || !phone || !email || !nfcProduct) {
     return res.status(400).json({ error: 'fullName, phone, email, and nfcProduct are required' });
@@ -237,9 +243,9 @@ app.post('/api/applications', apiLimiter, async (req, res) => {
   );
 
   return res.status(201).json({ id: result.lastID, status: 'pending' });
-});
+}));
 
-app.get('/api/me', apiLimiter, requireAuth, async (req, res) => {
+app.get('/api/me', apiLimiter, requireAuth, asyncHandler(async (req, res) => {
   const db = await getDb();
   const user = await db.get(
     'SELECT id, username, email, full_name, phone, city, status FROM users WHERE id = ?',
@@ -251,9 +257,9 @@ app.get('/api/me', apiLimiter, requireAuth, async (req, res) => {
   }
 
   return res.json(user);
-});
+}));
 
-app.get('/api/profile', apiLimiter, async (req, res) => {
+app.get('/api/profile', apiLimiter, asyncHandler(async (req, res) => {
   const profileUserId = await ensurePublicProfileUserId();
   const db = await getDb();
   const profile = await db.get(
@@ -277,9 +283,9 @@ app.get('/api/profile', apiLimiter, async (req, res) => {
     company: profile.company,
     socialLinks,
   });
-});
+}));
 
-app.get('/api/admin/profile', apiLimiter, requireAdmin, async (req, res) => {
+app.get('/api/admin/profile', apiLimiter, requireAdmin, asyncHandler(async (req, res) => {
   const profileUserId = await ensurePublicProfileUserId();
   const db = await getDb();
   const profile = await db.get(
@@ -303,9 +309,9 @@ app.get('/api/admin/profile', apiLimiter, requireAdmin, async (req, res) => {
     company: profile.company,
     socialLinks,
   });
-});
+}));
 
-app.put('/api/admin/profile', apiLimiter, requireAdmin, async (req, res, next) => {
+app.put('/api/admin/profile', apiLimiter, requireAdmin, asyncHandler(async (req, res) => {
   const { fullName, bio, jobTitle, company, socialLinks } = req.body || {};
 
   if (!fullName) {
@@ -350,11 +356,11 @@ app.put('/api/admin/profile', apiLimiter, requireAdmin, async (req, res, next) =
     } catch (rollbackError) {
       console.error('Failed to rollback profile update', rollbackError);
     }
-    return next(error);
+    throw error;
   }
 
   return res.json({ status: 'ok' });
-});
+}));
 
 app.use((req, res) => {
   res.status(404).json({ error: 'Not found' });
