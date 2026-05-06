@@ -1,19 +1,121 @@
 const saveButton = document.getElementById('save-contact');
+const nameEl = document.getElementById('profile-name');
+const roleEl = document.getElementById('profile-role');
+const bioEl = document.getElementById('profile-bio');
+const avatarInitialsEl = document.getElementById('profile-avatar-initials');
+const socialGrid = document.getElementById('profile-social-grid');
+
+const socialIconMap = {
+  whatsapp: 'WA',
+  telegram: 'TG',
+  linkedin: 'in',
+  instagram: 'IG',
+  facebook: 'FB',
+  youtube: 'YT',
+  x: 'X',
+  twitter: 'X',
+};
+
+let currentProfile = {
+  fullName: 'Ashar NFC',
+  jobTitle: '',
+  company: '',
+  bio: '',
+  socialLinks: [],
+};
+
+function getInitials(name) {
+  if (!name) return 'AN';
+  return name
+    .split(' ')
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0].toUpperCase())
+    .join('');
+}
+
+function formatRole(jobTitle, company) {
+  if (jobTitle && company) return `${jobTitle} · ${company}`;
+  return jobTitle || company || '';
+}
+
+function normalizeUrl(url) {
+  if (!url) return '';
+  if (url.startsWith('http://') || url.startsWith('https://')) return url;
+  return `https://${url}`;
+}
+
+function renderProfile(profile) {
+  const roleText = formatRole(profile.jobTitle, profile.company);
+  nameEl.textContent = profile.fullName || 'Ashar NFC';
+  avatarInitialsEl.textContent = getInitials(profile.fullName || 'Ashar NFC');
+  roleEl.textContent = roleText;
+  roleEl.style.display = roleText ? 'block' : 'none';
+  bioEl.textContent = profile.bio || '';
+  bioEl.style.display = profile.bio ? 'block' : 'none';
+
+  socialGrid.innerHTML = '';
+  if (!profile.socialLinks.length) {
+    const empty = document.createElement('p');
+    empty.className = 'profile-social__empty';
+    empty.textContent = 'No social links yet.';
+    socialGrid.appendChild(empty);
+    return;
+  }
+
+  profile.socialLinks.forEach((link) => {
+    if (!link?.url) return;
+    const type = (link.type || 'link').toLowerCase();
+    const anchor = document.createElement('a');
+    anchor.className = 'social-link';
+    anchor.href = normalizeUrl(link.url);
+    anchor.target = '_blank';
+    anchor.rel = 'noopener';
+
+    const icon = document.createElement('span');
+    icon.className = 'social-icon';
+    icon.textContent = socialIconMap[type] || type.slice(0, 2).toUpperCase();
+
+    const text = document.createElement('span');
+    text.className = 'social-text';
+    text.textContent = type.charAt(0).toUpperCase() + type.slice(1);
+
+    anchor.append(icon, text);
+    socialGrid.appendChild(anchor);
+  });
+}
+
+async function loadProfile() {
+  try {
+    const response = await fetch('/api/profile');
+    if (!response.ok) return;
+    const data = await response.json();
+    currentProfile = {
+      fullName: data.fullName || 'Ashar NFC',
+      jobTitle: data.jobTitle || '',
+      company: data.company || '',
+      bio: data.bio || '',
+      socialLinks: Array.isArray(data.socialLinks) ? data.socialLinks : [],
+    };
+    renderProfile(currentProfile);
+  } catch (error) {
+    console.error('Failed to load profile', error);
+  }
+}
 
 if (saveButton) {
   saveButton.addEventListener('click', () => {
-    const vcard = [
+    const lines = [
       'BEGIN:VCARD',
       'VERSION:3.0',
-      'FN:Amina Johnson',
-      'ORG:Ashar NFC',
-      'TITLE:Founder',
-      'TEL;TYPE=CELL:+1-555-0100',
-      'EMAIL:hello@ashar.nfc',
-      'END:VCARD',
-    ].join('\n');
+      `FN:${currentProfile.fullName || 'Ashar NFC'}`,
+    ];
 
-    const blob = new Blob([vcard], { type: 'text/vcard' });
+    if (currentProfile.company) lines.push(`ORG:${currentProfile.company}`);
+    if (currentProfile.jobTitle) lines.push(`TITLE:${currentProfile.jobTitle}`);
+    lines.push('END:VCARD');
+
+    const blob = new Blob([lines.join('\n')], { type: 'text/vcard' });
     const url = URL.createObjectURL(blob);
 
     const link = document.createElement('a');
@@ -25,3 +127,5 @@ if (saveButton) {
     URL.revokeObjectURL(url);
   });
 }
+
+loadProfile();

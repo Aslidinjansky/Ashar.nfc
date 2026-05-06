@@ -85,6 +85,22 @@ db.exec(`
     notes TEXT,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
   );
+
+  CREATE TABLE IF NOT EXISTS settings (
+    key TEXT PRIMARY KEY,
+    value TEXT NOT NULL
+  );
 `);
+
+function ensureColumn(tableName, columnName, definition) {
+  const columns = db.prepare(`PRAGMA table_info(${tableName})`).all();
+  const hasColumn = columns.some((column) => column.name === columnName);
+  if (!hasColumn) {
+    db.exec(`ALTER TABLE ${tableName} ADD COLUMN ${columnName} ${definition}`);
+  }
+}
+
+ensureColumn('users', 'job_title', 'TEXT');
+ensureColumn('users', 'company', 'TEXT');
 
 module.exports = db;

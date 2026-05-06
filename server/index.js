@@ -5,9 +5,11 @@ const cors = require('cors');
 const helmet = require('helmet');
 const path = require('path');
 const bcrypt = require('bcryptjs');
+const crypto = require('crypto');
+const rateLimit = require('express-rate-limit');
 const jwt = require('jsonwebtoken');
 const db = require('./db');
-const { requireAuth } = require('./middleware/auth');
+const { requireAuth, requireAdmin } = require('./middleware/auth');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -16,10 +18,33 @@ if (!process.env.JWT_SECRET) {
   throw new Error('JWT_SECRET is required');
 }
 
-app.use(helmet({ contentSecurityPolicy: false }));
+if (!process.env.ADMIN_PASSWORD_HASH) {
+  throw new Error('ADMIN_PASSWORD_HASH is required');
+}
+
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        baseUri: ["'self'"],
+        fontSrc: ["'self'"],
+        formAction: ["'self'"],
+        frameAncestors: ["'none'"],
+        imgSrc: ["'self'", 'data:'],
+        objectSrc: ["'none'"],
+        scriptSrc: ["'self'"],
+        styleSrc: ["'self'"],
+        connectSrc: ["'self'"],
+        upgradeInsecureRequests: [],
+      },
+    },
+  })
+);
 app.use(cors());
 app.use(express.json({ limit: '2mb' }));
 
+app.use(express.static(path.join(__dirname, '..', 'public')));
 app.use('/assets', express.static(path.join(__dirname, '..', 'public', 'assets')));
 app.use('/css', express.static(path.join(__dirname, '..', 'public', 'css')));
 app.use('/js', express.static(path.join(__dirname, '..', 'public', 'js')));
@@ -31,11 +56,48 @@ function signToken(payload) {
   });
 }
 
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 12,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many authentication attempts. Please try again later.' },
+});
+
+function ensurePublicProfileUserId() {
+  const setting = db
+    .prepare('SELECT value FROM settings WHERE key = ?')
+    .get('public_profile_user_id');
+  if (setting?.value) {
+    const existing = db.prepare('SELECT id FROM users WHERE id = ?').get(Number(setting.value));
+    if (existing) return existing.id;
+  }
+
+  let profileUser = db
+    .prepare('SELECT id FROM users WHERE username = ?')
+    .get('public_profile');
+  if (!profileUser) {
+    const placeholderPassword = bcrypt.hashSync(crypto.randomBytes(32).toString('hex'), 12);
+    const result = db
+      .prepare(
+        `INSERT INTO users
+          (username, email, password_hash, full_name, role, status)
+         VALUES (?, ?, ?, ?, 'user', 'active')`
+      )
+      .run('public_profile', 'public@ashar.nfc', placeholderPassword, 'Ashar NFC');
+    profileUser = { id: result.lastInsertRowid };
+  }
+
+  db.prepare('INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)')
+    .run('public_profile_user_id', String(profileUser.id));
+  return profileUser.id;
+}
+
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok' });
 });
 
-app.post('/api/auth/register', async (req, res) => {
+app.post('/api/auth/register', authLimiter, async (req, res) => {
   const { username, email, password, fullName, phone, city, nfcProduct } = req.body || {};
 
   if (!username || !email || !password || !fullName) {
@@ -62,7 +124,7 @@ app.post('/api/auth/register', async (req, res) => {
   return res.status(201).json({ token });
 });
 
-app.post('/api/auth/login', async (req, res) => {
+app.post('/api/auth/login', authLimiter, async (req, res) => {
   const { identifier, password } = req.body || {};
   if (!identifier || !password) {
     return res.status(400).json({ error: 'identifier and password are required' });
@@ -89,7 +151,7 @@ app.post('/api/auth/login', async (req, res) => {
   return res.json({ token });
 });
 
-app.post('/api/auth/admin/login', async (req, res) => {
+app.post('/api/auth/admin/login', authLimiter, async (req, res) => {
   const { username, password } = req.body || {};
   if (!username || !password) {
     return res.status(400).json({ error: 'username and password are required' });
@@ -97,15 +159,12 @@ app.post('/api/auth/admin/login', async (req, res) => {
 
   const adminUsername = process.env.ADMIN_USERNAME || 'admin';
   const adminPasswordHash = process.env.ADMIN_PASSWORD_HASH;
-  const adminPassword = process.env.ADMIN_PASSWORD || '';
 
   if (username !== adminUsername) {
     return res.status(401).json({ error: 'Invalid credentials' });
   }
 
-  const passwordValid = adminPasswordHash
-    ? await bcrypt.compare(password, adminPasswordHash)
-    : password === adminPassword;
+  const passwordValid = await bcrypt.compare(password, adminPasswordHash);
 
   if (!passwordValid) {
     return res.status(401).json({ error: 'Invalid credentials' });
@@ -142,6 +201,86 @@ app.get('/api/me', requireAuth, (req, res) => {
   }
 
   return res.json(user);
+});
+
+app.get('/api/profile', (req, res) => {
+  const profileUserId = ensurePublicProfileUserId();
+  const profile = db
+    .prepare('SELECT full_name, bio, job_title, company FROM users WHERE id = ?')
+    .get(profileUserId);
+
+  if (!profile) {
+    return res.status(404).json({ error: 'Profile not found' });
+  }
+
+  const socialLinks = db
+    .prepare('SELECT type, url FROM social_links WHERE user_id = ? ORDER BY id')
+    .all(profileUserId);
+
+  return res.json({
+    fullName: profile.full_name,
+    bio: profile.bio,
+    jobTitle: profile.job_title,
+    company: profile.company,
+    socialLinks,
+  });
+});
+
+app.get('/api/admin/profile', requireAdmin, (req, res) => {
+  const profileUserId = ensurePublicProfileUserId();
+  const profile = db
+    .prepare('SELECT full_name, bio, job_title, company FROM users WHERE id = ?')
+    .get(profileUserId);
+
+  if (!profile) {
+    return res.status(404).json({ error: 'Profile not found' });
+  }
+
+  const socialLinks = db
+    .prepare('SELECT type, url FROM social_links WHERE user_id = ? ORDER BY id')
+    .all(profileUserId);
+
+  return res.json({
+    fullName: profile.full_name,
+    bio: profile.bio,
+    jobTitle: profile.job_title,
+    company: profile.company,
+    socialLinks,
+  });
+});
+
+app.put('/api/admin/profile', requireAdmin, (req, res) => {
+  const { fullName, bio, jobTitle, company, socialLinks } = req.body || {};
+
+  if (!fullName) {
+    return res.status(400).json({ error: 'fullName is required' });
+  }
+
+  const profileUserId = ensurePublicProfileUserId();
+  const updateProfile = db.prepare(
+    `UPDATE users
+     SET full_name = ?, bio = ?, job_title = ?, company = ?, updated_at = CURRENT_TIMESTAMP
+     WHERE id = ?`
+  );
+  const deleteLinks = db.prepare('DELETE FROM social_links WHERE user_id = ?');
+  const insertLink = db.prepare(
+    'INSERT INTO social_links (user_id, type, url) VALUES (?, ?, ?)'
+  );
+
+  const transaction = db.transaction(() => {
+    updateProfile.run(fullName, bio || null, jobTitle || null, company || null, profileUserId);
+    deleteLinks.run(profileUserId);
+
+    if (Array.isArray(socialLinks)) {
+      socialLinks.forEach((link) => {
+        if (!link?.type || !link?.url) return;
+        insertLink.run(profileUserId, String(link.type), String(link.url));
+      });
+    }
+  });
+
+  transaction();
+  return res.json({ status: 'ok' });
 });
 
 app.use((req, res) => {

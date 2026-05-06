@@ -312,6 +312,12 @@ body {
   color: var(--silver-300);
 }
 
+.profile-bio {
+  margin: 12px 0 0;
+  color: var(--silver-300);
+  line-height: 1.5;
+}
+
 .profile-action {
   width: 100%;
   padding: 14px 18px;
@@ -349,6 +355,13 @@ body {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 12px;
+}
+
+.profile-social__empty {
+  margin: 0;
+  grid-column: 1 / -1;
+  font-size: 0.9rem;
+  color: var(--silver-300);
 }
 
 .social-link {
@@ -431,6 +444,124 @@ body {
     transform: scale(1.06);
     opacity: 1;
   }
+}
+
+.admin-page {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.admin-header {
+  padding: 24px 22px;
+  border-radius: 26px;
+  background: linear-gradient(150deg, rgba(16, 58, 44, 0.95), rgba(6, 22, 17, 0.95));
+  box-shadow: 0 20px 36px rgba(0, 0, 0, 0.45);
+}
+
+.admin-header__eyebrow {
+  margin: 0 0 6px;
+  color: var(--gold-300);
+  letter-spacing: 0.32rem;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+}
+
+.admin-header__title {
+  margin: 0 0 8px;
+  font-family: "Playfair Display", "Times New Roman", serif;
+  font-size: 1.6rem;
+}
+
+.admin-header__subtitle {
+  margin: 0;
+  color: var(--silver-300);
+  line-height: 1.5;
+}
+
+.admin-card {
+  padding: 24px 22px;
+  border-radius: 24px;
+  background: linear-gradient(160deg, rgba(12, 45, 34, 0.95), rgba(6, 20, 16, 0.95));
+  border: 1px solid rgba(212, 162, 58, 0.22);
+  box-shadow: 0 20px 34px rgba(0, 0, 0, 0.4);
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.admin-card--hidden {
+  display: none;
+}
+
+.admin-card__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.admin-card h2 {
+  margin: 0;
+  font-size: 1.2rem;
+}
+
+.admin-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 0.9rem;
+  color: var(--silver-300);
+}
+
+.admin-input,
+.admin-textarea {
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 14px;
+  border: 1px solid rgba(245, 208, 122, 0.2);
+  background: rgba(8, 26, 20, 0.85);
+  color: var(--silver-100);
+  font: inherit;
+}
+
+.admin-textarea {
+  min-height: 110px;
+  resize: vertical;
+}
+
+.admin-action {
+  width: 100%;
+  padding: 12px 16px;
+  border-radius: 999px;
+  border: none;
+  background: linear-gradient(140deg, var(--gold-300), var(--gold-500));
+  color: var(--velvet-900);
+  font-weight: 600;
+  letter-spacing: 0.1rem;
+  text-transform: uppercase;
+  cursor: pointer;
+  box-shadow: 0 16px 24px rgba(0, 0, 0, 0.35);
+}
+
+.admin-link {
+  background: none;
+  border: none;
+  color: var(--gold-300);
+  cursor: pointer;
+  font: inherit;
+  padding: 0;
+}
+
+.admin-status {
+  min-height: 22px;
+  font-size: 0.85rem;
+  color: var(--silver-300);
+}
+
+.admin-grid {
+  display: grid;
+  gap: 12px;
 }
 
 @media (max-width: 360px) {
