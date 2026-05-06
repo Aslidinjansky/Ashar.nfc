@@ -13,7 +13,7 @@ if (footerTarget) {
     })
     .catch((error) => {
       console.warn(
-        'Failed to load footer from /components/footer.html. Check network connectivity or server configuration.',
+        'Failed to load footer from /components/footer.html. Verify static hosting for /components and check network connectivity.',
         error
       );
     });
