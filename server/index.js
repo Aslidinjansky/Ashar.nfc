@@ -8,7 +8,7 @@ const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
 const rateLimit = require('express-rate-limit');
 const jwt = require('jsonwebtoken');
-const db = require('./db');
+const { getDb } = require('./db');
 const { requireAuth, requireAdmin } = require('./middleware/auth');
 
 const app = express();
@@ -80,34 +80,39 @@ const apiLimiter = rateLimit({
 });
 
 async function ensurePublicProfileUserId() {
-  const setting = db
-    .prepare('SELECT value FROM settings WHERE key = ?')
-    .get('public_profile_user_id');
+  const db = await getDb();
+  const setting = await db.get('SELECT value FROM settings WHERE key = ?', 'public_profile_user_id');
   if (setting?.value) {
-    const existing = db.prepare('SELECT id FROM users WHERE id = ?').get(Number(setting.value));
+    const existing = await db.get('SELECT id FROM users WHERE id = ?', Number(setting.value));
     if (existing) return existing.id;
   }
 
-  let profileUser = db
-    .prepare('SELECT id FROM users WHERE username = ?')
-    .get(PUBLIC_PROFILE_USERNAME);
+  let profileUser = await db.get(
+    'SELECT id FROM users WHERE username = ?',
+    PUBLIC_PROFILE_USERNAME
+  );
   if (!profileUser) {
     const placeholderPassword = await bcrypt.hash(
       crypto.randomBytes(32).toString('hex'),
       BCRYPT_ROUNDS
     );
-    const result = db
-      .prepare(
-        `INSERT INTO users
-          (username, email, password_hash, full_name, role, status)
-         VALUES (?, ?, ?, ?, 'user', 'active')`
-      )
-      .run(PUBLIC_PROFILE_USERNAME, PUBLIC_PROFILE_EMAIL, placeholderPassword, 'Ashar NFC');
-    profileUser = { id: result.lastInsertRowid };
+    const result = await db.run(
+      `INSERT INTO users
+        (username, email, password_hash, full_name, role, status)
+       VALUES (?, ?, ?, ?, 'user', 'active')`,
+      PUBLIC_PROFILE_USERNAME,
+      PUBLIC_PROFILE_EMAIL,
+      placeholderPassword,
+      'Ashar NFC'
+    );
+    profileUser = { id: result.lastID };
   }
 
-  db.prepare('INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)')
-    .run('public_profile_user_id', String(profileUser.id));
+  await db.run(
+    'INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)',
+    'public_profile_user_id',
+    String(profileUser.id)
+  );
   return profileUser.id;
 }
 
@@ -131,23 +136,31 @@ app.post('/api/auth/register', authLimiter, async (req, res) => {
     return res.status(400).json({ error: 'username, email, password, and fullName are required' });
   }
 
-  const existing = db
-    .prepare('SELECT id FROM users WHERE username = ? OR email = ?')
-    .get(username, email);
+  const db = await getDb();
+  const existing = await db.get(
+    'SELECT id FROM users WHERE username = ? OR email = ?',
+    username,
+    email
+  );
   if (existing) {
     return res.status(409).json({ error: 'Username or email already exists' });
   }
 
   const passwordHash = await bcrypt.hash(password, BCRYPT_ROUNDS);
-  const result = db
-    .prepare(
-      `INSERT INTO users
-        (username, email, password_hash, full_name, phone, city, nfc_product, role, status)
-       VALUES (?, ?, ?, ?, ?, ?, ?, 'user', 'pending')`
-    )
-    .run(username, email, passwordHash, fullName, phone || null, city || null, nfcProduct || null);
+  const result = await db.run(
+    `INSERT INTO users
+      (username, email, password_hash, full_name, phone, city, nfc_product, role, status)
+     VALUES (?, ?, ?, ?, ?, ?, ?, 'user', 'pending')`,
+    username,
+    email,
+    passwordHash,
+    fullName,
+    phone || null,
+    city || null,
+    nfcProduct || null
+  );
 
-  const token = signToken({ id: result.lastInsertRowid, role: 'user' });
+  const token = signToken({ id: result.lastID, role: 'user' });
   return res.status(201).json({ token });
 });
 
@@ -157,9 +170,12 @@ app.post('/api/auth/login', authLimiter, async (req, res) => {
     return res.status(400).json({ error: 'identifier and password are required' });
   }
 
-  const user = db
-    .prepare('SELECT id, username, email, password_hash, status FROM users WHERE username = ? OR email = ?')
-    .get(identifier, identifier);
+  const db = await getDb();
+  const user = await db.get(
+    'SELECT id, username, email, password_hash, status FROM users WHERE username = ? OR email = ?',
+    identifier,
+    identifier
+  );
 
   if (!user) {
     return res.status(401).json({ error: 'Invalid credentials' });
@@ -201,27 +217,34 @@ app.post('/api/auth/admin/login', authLimiter, async (req, res) => {
   return res.json({ token });
 });
 
-app.post('/api/applications', apiLimiter, (req, res) => {
+app.post('/api/applications', apiLimiter, async (req, res) => {
   const { fullName, phone, email, whatsapp, city, nfcProduct } = req.body || {};
   if (!fullName || !phone || !email || !nfcProduct) {
     return res.status(400).json({ error: 'fullName, phone, email, and nfcProduct are required' });
   }
 
-  const result = db
-    .prepare(
-      `INSERT INTO applications
-        (full_name, phone, email, whatsapp, city, nfc_product, status)
-       VALUES (?, ?, ?, ?, ?, ?, 'pending')`
-    )
-    .run(fullName, phone, email, whatsapp || null, city || null, nfcProduct);
+  const db = await getDb();
+  const result = await db.run(
+    `INSERT INTO applications
+      (full_name, phone, email, whatsapp, city, nfc_product, status)
+     VALUES (?, ?, ?, ?, ?, ?, 'pending')`,
+    fullName,
+    phone,
+    email,
+    whatsapp || null,
+    city || null,
+    nfcProduct
+  );
 
-  return res.status(201).json({ id: result.lastInsertRowid, status: 'pending' });
+  return res.status(201).json({ id: result.lastID, status: 'pending' });
 });
 
-app.get('/api/me', apiLimiter, requireAuth, (req, res) => {
-  const user = db
-    .prepare('SELECT id, username, email, full_name, phone, city, status FROM users WHERE id = ?')
-    .get(req.user.id);
+app.get('/api/me', apiLimiter, requireAuth, async (req, res) => {
+  const db = await getDb();
+  const user = await db.get(
+    'SELECT id, username, email, full_name, phone, city, status FROM users WHERE id = ?',
+    req.user.id
+  );
 
   if (!user) {
     return res.status(404).json({ error: 'User not found' });
@@ -232,17 +255,20 @@ app.get('/api/me', apiLimiter, requireAuth, (req, res) => {
 
 app.get('/api/profile', apiLimiter, async (req, res) => {
   const profileUserId = await ensurePublicProfileUserId();
-  const profile = db
-    .prepare('SELECT full_name, bio, job_title, company FROM users WHERE id = ?')
-    .get(profileUserId);
+  const db = await getDb();
+  const profile = await db.get(
+    'SELECT full_name, bio, job_title, company FROM users WHERE id = ?',
+    profileUserId
+  );
 
   if (!profile) {
     return res.status(404).json({ error: 'Profile not found' });
   }
 
-  const socialLinks = db
-    .prepare('SELECT type, url FROM social_links WHERE user_id = ? ORDER BY id')
-    .all(profileUserId);
+  const socialLinks = await db.all(
+    'SELECT type, url FROM social_links WHERE user_id = ? ORDER BY id',
+    profileUserId
+  );
 
   return res.json({
     fullName: profile.full_name,
@@ -255,17 +281,20 @@ app.get('/api/profile', apiLimiter, async (req, res) => {
 
 app.get('/api/admin/profile', apiLimiter, requireAdmin, async (req, res) => {
   const profileUserId = await ensurePublicProfileUserId();
-  const profile = db
-    .prepare('SELECT full_name, bio, job_title, company FROM users WHERE id = ?')
-    .get(profileUserId);
+  const db = await getDb();
+  const profile = await db.get(
+    'SELECT full_name, bio, job_title, company FROM users WHERE id = ?',
+    profileUserId
+  );
 
   if (!profile) {
     return res.status(404).json({ error: 'Profile not found' });
   }
 
-  const socialLinks = db
-    .prepare('SELECT type, url FROM social_links WHERE user_id = ? ORDER BY id')
-    .all(profileUserId);
+  const socialLinks = await db.all(
+    'SELECT type, url FROM social_links WHERE user_id = ? ORDER BY id',
+    profileUserId
+  );
 
   return res.json({
     fullName: profile.full_name,
@@ -276,7 +305,7 @@ app.get('/api/admin/profile', apiLimiter, requireAdmin, async (req, res) => {
   });
 });
 
-app.put('/api/admin/profile', apiLimiter, requireAdmin, async (req, res) => {
+app.put('/api/admin/profile', apiLimiter, requireAdmin, async (req, res, next) => {
   const { fullName, bio, jobTitle, company, socialLinks } = req.body || {};
 
   if (!fullName) {
@@ -284,31 +313,46 @@ app.put('/api/admin/profile', apiLimiter, requireAdmin, async (req, res) => {
   }
 
   const profileUserId = await ensurePublicProfileUserId();
-  const updateProfile = db.prepare(
-    `UPDATE users
-     SET full_name = ?, bio = ?, job_title = ?, company = ?, updated_at = CURRENT_TIMESTAMP
-     WHERE id = ?`
-  );
-  const deleteLinks = db.prepare('DELETE FROM social_links WHERE user_id = ?');
-  const insertLink = db.prepare(
-    'INSERT INTO social_links (user_id, type, url) VALUES (?, ?, ?)'
-  );
+  const db = await getDb();
 
-  const transaction = db.transaction(() => {
-    updateProfile.run(fullName, bio || null, jobTitle || null, company || null, profileUserId);
-    deleteLinks.run(profileUserId);
+  try {
+    await db.exec('BEGIN');
+    await db.run(
+      `UPDATE users
+       SET full_name = ?, bio = ?, job_title = ?, company = ?, updated_at = CURRENT_TIMESTAMP
+       WHERE id = ?`,
+      fullName,
+      bio || null,
+      jobTitle || null,
+      company || null,
+      profileUserId
+    );
+    await db.run('DELETE FROM social_links WHERE user_id = ?', profileUserId);
 
     if (Array.isArray(socialLinks)) {
-      socialLinks.forEach((link) => {
-        if (!link?.type || !link?.url) return;
+      for (const link of socialLinks) {
+        if (!link?.type || !link?.url) continue;
         const url = String(link.url).trim();
-        if (!isValidSocialUrl(url)) return;
-        insertLink.run(profileUserId, String(link.type), url);
-      });
+        if (!isValidSocialUrl(url)) continue;
+        await db.run(
+          'INSERT INTO social_links (user_id, type, url) VALUES (?, ?, ?)',
+          profileUserId,
+          String(link.type),
+          url
+        );
+      }
     }
-  });
 
-  transaction();
+    await db.exec('COMMIT');
+  } catch (error) {
+    try {
+      await db.exec('ROLLBACK');
+    } catch (rollbackError) {
+      console.error('Failed to rollback profile update', rollbackError);
+    }
+    return next(error);
+  }
+
   return res.json({ status: 'ok' });
 });
 
@@ -316,6 +360,14 @@ app.use((req, res) => {
   res.status(404).json({ error: 'Not found' });
 });
 
-app.listen(PORT, () => {
-  console.log(`Ashar.nfc backend running on port ${PORT}`);
+async function startServer() {
+  await getDb();
+  app.listen(PORT, () => {
+    console.log(`Ashar.nfc backend running on port ${PORT}`);
+  });
+}
+
+startServer().catch((error) => {
+  console.error('Failed to initialize database', error);
+  process.exit(1);
 });
