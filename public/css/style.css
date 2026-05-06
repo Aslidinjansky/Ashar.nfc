@@ -1,0 +1,232 @@
+:root {
+  color-scheme: dark;
+  --velvet-900: #08261e;
+  --velvet-800: #0c3b2c;
+  --velvet-700: #134a38;
+  --silver-100: #f2f2f2;
+  --silver-300: #c7c7c7;
+  --gold-500: #d4a23a;
+  --gold-300: #f5d07a;
+  --shadow-dark: rgba(0, 0, 0, 0.45);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: "Inter", "Helvetica Neue", sans-serif;
+  background: radial-gradient(circle at top, var(--velvet-700), var(--velvet-900) 62%);
+  color: var(--silver-100);
+  min-height: 100vh;
+}
+
+.page {
+  max-width: 430px;
+  margin: 0 auto;
+  overflow-x: hidden;
+  padding: 32px 20px 48px;
+  position: relative;
+}
+
+.hero {
+  position: relative;
+  text-align: center;
+  padding: 28px 18px 40px;
+  border-radius: 28px;
+  background: linear-gradient(160deg, rgba(17, 60, 47, 0.95), rgba(7, 30, 23, 0.9));
+  box-shadow: 0 24px 40px rgba(0, 0, 0, 0.45);
+  overflow: hidden;
+}
+
+.hero__glow {
+  position: absolute;
+  inset: -40% -20%;
+  background: radial-gradient(circle, rgba(212, 162, 58, 0.22), transparent 55%);
+  opacity: 0.9;
+  animation: pulse 6s ease-in-out infinite;
+}
+
+.hero__logo {
+  width: 220px;
+  height: 220px;
+  margin: 0 auto 16px;
+  filter: drop-shadow(0 12px 18px rgba(0, 0, 0, 0.35));
+  position: relative;
+  z-index: 1;
+}
+
+.hero__eyebrow {
+  margin: 0;
+  font-size: 0.72rem;
+  letter-spacing: 0.32rem;
+  color: var(--gold-300);
+  text-transform: uppercase;
+  position: relative;
+  z-index: 1;
+}
+
+.hero__title {
+  margin: 12px 0 12px;
+  font-family: "Playfair Display", "Times New Roman", serif;
+  font-size: 1.85rem;
+  line-height: 1.25;
+  position: relative;
+  z-index: 1;
+}
+
+.hero__copy {
+  margin: 0;
+  color: var(--silver-300);
+  line-height: 1.6;
+  position: relative;
+  z-index: 1;
+}
+
+.products {
+  margin-top: 36px;
+}
+
+.section-heading span {
+  display: block;
+  color: var(--gold-300);
+  letter-spacing: 0.28rem;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+}
+
+.section-heading h2 {
+  margin: 10px 0 22px;
+  font-size: 1.6rem;
+  font-family: "Playfair Display", "Times New Roman", serif;
+}
+
+.product-grid {
+  display: grid;
+  gap: 18px;
+}
+
+.product-card {
+  position: relative;
+  padding: 22px 20px;
+  border-radius: 22px;
+  background: linear-gradient(145deg, rgba(18, 55, 42, 0.95), rgba(10, 28, 22, 0.95));
+  border: 1px solid rgba(212, 162, 58, 0.2);
+  box-shadow: 0 16px 30px var(--shadow-dark);
+  transition: transform 0.4s ease, box-shadow 0.4s ease, border-color 0.4s ease;
+  animation: float 6s ease-in-out infinite;
+}
+
+.product-card:nth-child(2) {
+  animation-delay: 0.4s;
+}
+
+.product-card:nth-child(3) {
+  animation-delay: 0.8s;
+}
+
+.product-card:hover {
+  transform: translateY(-8px) scale(1.01);
+  box-shadow: 0 22px 40px rgba(0, 0, 0, 0.55);
+  border-color: rgba(245, 208, 122, 0.6);
+}
+
+.product-card__badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  letter-spacing: 0.16rem;
+  text-transform: uppercase;
+  color: #0b2e24;
+  background: linear-gradient(120deg, var(--gold-300), var(--gold-500));
+  box-shadow: 0 8px 12px rgba(0, 0, 0, 0.35);
+  margin-bottom: 12px;
+}
+
+.product-card h3 {
+  margin: 0 0 8px;
+  font-size: 1.2rem;
+  letter-spacing: 0.04rem;
+}
+
+.product-card p {
+  margin: 0;
+  color: var(--silver-300);
+  line-height: 1.6;
+}
+
+.product-card--ring {
+  background: linear-gradient(145deg, rgba(19, 70, 52, 0.95), rgba(8, 32, 25, 0.95));
+}
+
+.product-card--metal {
+  background: linear-gradient(145deg, rgba(15, 48, 38, 0.96), rgba(8, 26, 20, 0.96));
+}
+
+.product-card--plastic {
+  background: linear-gradient(145deg, rgba(21, 62, 48, 0.9), rgba(9, 28, 22, 0.92));
+}
+
+.footer-slot {
+  margin-top: 32px;
+}
+
+.ashar-footer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 22px 0 6px;
+  color: var(--silver-300);
+  border-top: 1px solid rgba(212, 162, 58, 0.25);
+}
+
+.ashar-footer__logo {
+  width: 72px;
+  height: 72px;
+}
+
+.ashar-footer__brand {
+  letter-spacing: 0.35rem;
+  font-size: 0.85rem;
+  color: var(--gold-300);
+}
+
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    transform: scale(0.96);
+    opacity: 0.6;
+  }
+  50% {
+    transform: scale(1.06);
+    opacity: 1;
+  }
+}
+
+@media (max-width: 360px) {
+  .page {
+    padding: 24px 16px 36px;
+  }
+
+  .hero__logo {
+    width: 190px;
+    height: 190px;
+  }
+}

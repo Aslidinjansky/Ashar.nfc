@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Ashar.nfc | Premium NFC Experiences</title>
+    <link rel="stylesheet" href="/css/style.css" />
+  </head>
+  <body>
+    <div class="page">
+      <header class="hero">
+        <div class="hero__glow"></div>
+        <img src="/assets/logo.svg" alt="Ashar.nfc logo" class="hero__logo" />
+        <p class="hero__eyebrow">NEXT-GEN NFC BUSINESS CARDS</p>
+        <h1 class="hero__title">Tap into a luxurious first impression.</h1>
+        <p class="hero__copy">
+          Ashar.nfc brings a refined, modern way to share your presence. Premium materials, instant
+          connectivity, and elegant design — all in a single tap.
+        </p>
+      </header>
+
+      <section class="products">
+        <div class="section-heading">
+          <span>Signature Collection</span>
+          <h2>Crafted for impact.</h2>
+        </div>
+        <div class="product-grid">
+          <article class="product-card product-card--ring">
+            <div class="product-card__badge">Elite</div>
+            <h3>NFC Ring</h3>
+            <p>
+              A discreet, matte-finish ring engineered for effortless, everyday exchanges with
+              signature Ashar polish.
+            </p>
+          </article>
+
+          <article class="product-card product-card--metal">
+            <div class="product-card__badge">Signature</div>
+            <h3>Metal Card</h3>
+            <p>
+              Precision-cut metal with gloss gold accents, built to make an unforgettable
+              statement at first glance.
+            </p>
+          </article>
+
+          <article class="product-card product-card--plastic">
+            <div class="product-card__badge">Essential</div>
+            <h3>Plastic Card</h3>
+            <p>
+              Lightweight and refined with a velvet green finish — the elevated everyday choice
+              for modern professionals.
+            </p>
+          </article>
+        </div>
+      </section>
+
+      <div id="footer-placeholder" class="footer-slot"></div>
+    </div>
+
+    <script>
+      fetch('/components/footer.html')
+        .then((response) => response.text())
+        .then((html) => {
+          const footerTarget = document.getElementById('footer-placeholder');
+          if (footerTarget) {
+            footerTarget.innerHTML = html;
+          }
+        })
+        .catch(() => {});
+    </script>
+  </body>
+</html>
