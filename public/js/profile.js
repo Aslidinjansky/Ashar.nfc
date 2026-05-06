@@ -1,3 +1,4 @@
+const DEFAULT_PROFILE_NAME = 'Ashar NFC';
 const saveButton = document.getElementById('save-contact');
 const nameEl = document.getElementById('profile-name');
 const roleEl = document.getElementById('profile-role');
@@ -17,7 +18,7 @@ const socialIconMap = {
 };
 
 let currentProfile = {
-  fullName: 'Ashar NFC',
+  fullName: DEFAULT_PROFILE_NAME,
   jobTitle: '',
   company: '',
   bio: '',
@@ -47,8 +48,8 @@ function normalizeUrl(url) {
 
 function renderProfile(profile) {
   const roleText = formatRole(profile.jobTitle, profile.company);
-  nameEl.textContent = profile.fullName || 'Ashar NFC';
-  avatarInitialsEl.textContent = getInitials(profile.fullName || 'Ashar NFC');
+  nameEl.textContent = profile.fullName || DEFAULT_PROFILE_NAME;
+  avatarInitialsEl.textContent = getInitials(profile.fullName || DEFAULT_PROFILE_NAME);
   roleEl.textContent = roleText;
   roleEl.style.display = roleText ? 'block' : 'none';
   bioEl.textContent = profile.bio || '';
@@ -91,7 +92,7 @@ async function loadProfile() {
     if (!response.ok) return;
     const data = await response.json();
     currentProfile = {
-      fullName: data.fullName || 'Ashar NFC',
+      fullName: data.fullName || DEFAULT_PROFILE_NAME,
       jobTitle: data.jobTitle || '',
       company: data.company || '',
       bio: data.bio || '',
@@ -108,7 +109,7 @@ if (saveButton) {
     const vcardLines = [
       'BEGIN:VCARD',
       'VERSION:3.0',
-      `FN:${currentProfile.fullName || 'Ashar NFC'}`,
+      `FN:${currentProfile.fullName || DEFAULT_PROFILE_NAME}`,
     ];
 
     if (currentProfile.company) vcardLines.push(`ORG:${currentProfile.company}`);

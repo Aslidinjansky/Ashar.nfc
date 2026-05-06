@@ -56,9 +56,10 @@ function fillProfileForm(profile) {
   profileForm.bio.value = profile.bio || '';
 
   socialFields.forEach((field) => {
-    const match = profile.socialLinks?.find(
-      (link) => link.type?.toLowerCase() === field
-    );
+    const match = profile.socialLinks?.find((link) => {
+      if (typeof link?.type !== 'string') return false;
+      return link.type.toLowerCase() === field;
+    });
     profileForm[field].value = match?.url || '';
   });
 }

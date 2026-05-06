@@ -14,6 +14,8 @@ const { requireAuth, requireAdmin } = require('./middleware/auth');
 const app = express();
 const PORT = process.env.PORT || 3000;
 const BCRYPT_ROUNDS = 12;
+const PUBLIC_PROFILE_USERNAME = 'public_profile';
+const PUBLIC_PROFILE_EMAIL = 'public@ashar.nfc';
 
 if (!process.env.JWT_SECRET) {
   throw new Error('JWT_SECRET is required');
@@ -56,7 +58,8 @@ function signToken(payload) {
   try {
     return jwt.sign(payload, process.env.JWT_SECRET, { expiresIn });
   } catch (error) {
-    return jwt.sign(payload, process.env.JWT_SECRET);
+    console.error('Invalid TOKEN_EXPIRES_IN value', error);
+    throw error;
   }
 }
 
@@ -87,7 +90,7 @@ async function ensurePublicProfileUserId() {
 
   let profileUser = db
     .prepare('SELECT id FROM users WHERE username = ?')
-    .get('public_profile');
+    .get(PUBLIC_PROFILE_USERNAME);
   if (!profileUser) {
     const placeholderPassword = await bcrypt.hash(
       crypto.randomBytes(32).toString('hex'),
@@ -99,13 +102,22 @@ async function ensurePublicProfileUserId() {
           (username, email, password_hash, full_name, role, status)
          VALUES (?, ?, ?, ?, 'user', 'active')`
       )
-      .run('public_profile', 'public@ashar.nfc', placeholderPassword, 'Ashar NFC');
+      .run(PUBLIC_PROFILE_USERNAME, PUBLIC_PROFILE_EMAIL, placeholderPassword, 'Ashar NFC');
     profileUser = { id: result.lastInsertRowid };
   }
 
   db.prepare('INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)')
     .run('public_profile_user_id', String(profileUser.id));
   return profileUser.id;
+}
+
+function isValidSocialUrl(value) {
+  try {
+    const parsed = new URL(value);
+    return ['http:', 'https:'].includes(parsed.protocol);
+  } catch (error) {
+    return false;
+  }
 }
 
 app.get('/api/health', (req, res) => {
@@ -289,7 +301,9 @@ app.put('/api/admin/profile', apiLimiter, requireAdmin, async (req, res) => {
     if (Array.isArray(socialLinks)) {
       socialLinks.forEach((link) => {
         if (!link?.type || !link?.url) return;
-        insertLink.run(profileUserId, String(link.type), String(link.url));
+        const url = String(link.url).trim();
+        if (!isValidSocialUrl(url)) return;
+        insertLink.run(profileUserId, String(link.type), url);
       });
     }
   });
