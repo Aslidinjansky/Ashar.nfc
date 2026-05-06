@@ -13,6 +13,7 @@ const { requireAuth, requireAdmin } = require('./middleware/auth');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+const BCRYPT_ROUNDS = 12;
 
 if (!process.env.JWT_SECRET) {
   throw new Error('JWT_SECRET is required');
@@ -51,9 +52,12 @@ app.use('/js', express.static(path.join(__dirname, '..', 'public', 'js')));
 app.use('/components', express.static(path.join(__dirname, '..', 'public', 'components')));
 
 function signToken(payload) {
-  return jwt.sign(payload, process.env.JWT_SECRET, {
-    expiresIn: process.env.TOKEN_EXPIRES_IN || '7d'
-  });
+  const expiresIn = process.env.TOKEN_EXPIRES_IN || '7d';
+  try {
+    return jwt.sign(payload, process.env.JWT_SECRET, { expiresIn });
+  } catch (error) {
+    return jwt.sign(payload, process.env.JWT_SECRET);
+  }
 }
 
 const authLimiter = rateLimit({
@@ -85,7 +89,10 @@ async function ensurePublicProfileUserId() {
     .prepare('SELECT id FROM users WHERE username = ?')
     .get('public_profile');
   if (!profileUser) {
-    const placeholderPassword = await bcrypt.hash(crypto.randomBytes(32).toString('hex'), 12);
+    const placeholderPassword = await bcrypt.hash(
+      crypto.randomBytes(32).toString('hex'),
+      BCRYPT_ROUNDS
+    );
     const result = db
       .prepare(
         `INSERT INTO users
@@ -119,7 +126,7 @@ app.post('/api/auth/register', authLimiter, async (req, res) => {
     return res.status(409).json({ error: 'Username or email already exists' });
   }
 
-  const passwordHash = await bcrypt.hash(password, 12);
+  const passwordHash = await bcrypt.hash(password, BCRYPT_ROUNDS);
   const result = db
     .prepare(
       `INSERT INTO users

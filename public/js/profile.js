@@ -105,17 +105,17 @@ async function loadProfile() {
 
 if (saveButton) {
   saveButton.addEventListener('click', () => {
-    const lines = [
+    const vcardLines = [
       'BEGIN:VCARD',
       'VERSION:3.0',
       `FN:${currentProfile.fullName || 'Ashar NFC'}`,
     ];
 
-    if (currentProfile.company) lines.push(`ORG:${currentProfile.company}`);
-    if (currentProfile.jobTitle) lines.push(`TITLE:${currentProfile.jobTitle}`);
-    lines.push('END:VCARD');
+    if (currentProfile.company) vcardLines.push(`ORG:${currentProfile.company}`);
+    if (currentProfile.jobTitle) vcardLines.push(`TITLE:${currentProfile.jobTitle}`);
+    vcardLines.push('END:VCARD');
 
-    const blob = new Blob([lines.join('\n')], { type: 'text/vcard' });
+    const blob = new Blob([vcardLines.join('\n')], { type: 'text/vcard' });
     const url = URL.createObjectURL(blob);
 
     const link = document.createElement('a');

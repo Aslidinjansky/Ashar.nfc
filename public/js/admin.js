@@ -13,7 +13,7 @@ const socialFields = ['whatsapp', 'telegram', 'linkedin', 'instagram'];
 function setStatus(element, message, isError = false) {
   if (!element) return;
   element.textContent = message;
-  element.style.color = isError ? '#f5d07a' : '';
+  element.classList.toggle('admin-status--error', isError);
 }
 
 function setView(isAuthenticated) {

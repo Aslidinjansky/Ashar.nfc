@@ -92,17 +92,17 @@ db.exec(`
   );
 `);
 
-function ensureUserColumn(columnName, definition) {
+function ensureUserColumn(columnName) {
   const allowedColumns = new Set(['job_title', 'company']);
   if (!allowedColumns.has(columnName)) return;
   const columns = db.prepare('PRAGMA table_info(users)').all();
   const hasColumn = columns.some((column) => column.name === columnName);
   if (!hasColumn) {
-    db.exec(`ALTER TABLE users ADD COLUMN ${columnName} ${definition}`);
+    db.exec(`ALTER TABLE users ADD COLUMN ${columnName} TEXT`);
   }
 }
 
-ensureUserColumn('job_title', 'TEXT');
-ensureUserColumn('company', 'TEXT');
+ensureUserColumn('job_title');
+ensureUserColumn('company');
 
 module.exports = db;
