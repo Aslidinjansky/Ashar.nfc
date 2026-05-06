@@ -62,8 +62,13 @@
         .then((response) => response.text())
         .then((html) => {
           const footerTarget = document.getElementById('footer-placeholder');
-          if (footerTarget) {
-            footerTarget.innerHTML = html;
+          if (!footerTarget) return;
+
+          const parser = new DOMParser();
+          const doc = parser.parseFromString(html, 'text/html');
+          const footer = doc.querySelector('footer');
+          if (footer) {
+            footerTarget.replaceChildren(footer);
           }
         })
         .catch((error) => {
