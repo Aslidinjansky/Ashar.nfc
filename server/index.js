@@ -64,7 +64,15 @@ const authLimiter = rateLimit({
   message: { error: 'Too many authentication attempts. Please try again later.' },
 });
 
-function ensurePublicProfileUserId() {
+const apiLimiter = rateLimit({
+  windowMs: 5 * 60 * 1000,
+  max: 120,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many requests. Please slow down.' },
+});
+
+async function ensurePublicProfileUserId() {
   const setting = db
     .prepare('SELECT value FROM settings WHERE key = ?')
     .get('public_profile_user_id');
@@ -77,7 +85,7 @@ function ensurePublicProfileUserId() {
     .prepare('SELECT id FROM users WHERE username = ?')
     .get('public_profile');
   if (!profileUser) {
-    const placeholderPassword = bcrypt.hashSync(crypto.randomBytes(32).toString('hex'), 12);
+    const placeholderPassword = await bcrypt.hash(crypto.randomBytes(32).toString('hex'), 12);
     const result = db
       .prepare(
         `INSERT INTO users
@@ -174,7 +182,7 @@ app.post('/api/auth/admin/login', authLimiter, async (req, res) => {
   return res.json({ token });
 });
 
-app.post('/api/applications', (req, res) => {
+app.post('/api/applications', apiLimiter, (req, res) => {
   const { fullName, phone, email, whatsapp, city, nfcProduct } = req.body || {};
   if (!fullName || !phone || !email || !nfcProduct) {
     return res.status(400).json({ error: 'fullName, phone, email, and nfcProduct are required' });
@@ -191,7 +199,7 @@ app.post('/api/applications', (req, res) => {
   return res.status(201).json({ id: result.lastInsertRowid, status: 'pending' });
 });
 
-app.get('/api/me', requireAuth, (req, res) => {
+app.get('/api/me', apiLimiter, requireAuth, (req, res) => {
   const user = db
     .prepare('SELECT id, username, email, full_name, phone, city, status FROM users WHERE id = ?')
     .get(req.user.id);
@@ -203,8 +211,8 @@ app.get('/api/me', requireAuth, (req, res) => {
   return res.json(user);
 });
 
-app.get('/api/profile', (req, res) => {
-  const profileUserId = ensurePublicProfileUserId();
+app.get('/api/profile', apiLimiter, async (req, res) => {
+  const profileUserId = await ensurePublicProfileUserId();
   const profile = db
     .prepare('SELECT full_name, bio, job_title, company FROM users WHERE id = ?')
     .get(profileUserId);
@@ -226,8 +234,8 @@ app.get('/api/profile', (req, res) => {
   });
 });
 
-app.get('/api/admin/profile', requireAdmin, (req, res) => {
-  const profileUserId = ensurePublicProfileUserId();
+app.get('/api/admin/profile', apiLimiter, requireAdmin, async (req, res) => {
+  const profileUserId = await ensurePublicProfileUserId();
   const profile = db
     .prepare('SELECT full_name, bio, job_title, company FROM users WHERE id = ?')
     .get(profileUserId);
@@ -249,14 +257,14 @@ app.get('/api/admin/profile', requireAdmin, (req, res) => {
   });
 });
 
-app.put('/api/admin/profile', requireAdmin, (req, res) => {
+app.put('/api/admin/profile', apiLimiter, requireAdmin, async (req, res) => {
   const { fullName, bio, jobTitle, company, socialLinks } = req.body || {};
 
   if (!fullName) {
     return res.status(400).json({ error: 'fullName is required' });
   }
 
-  const profileUserId = ensurePublicProfileUserId();
+  const profileUserId = await ensurePublicProfileUserId();
   const updateProfile = db.prepare(
     `UPDATE users
      SET full_name = ?, bio = ?, job_title = ?, company = ?, updated_at = CURRENT_TIMESTAMP

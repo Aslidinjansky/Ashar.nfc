@@ -70,7 +70,7 @@ function renderProfile(profile) {
     anchor.className = 'social-link';
     anchor.href = normalizeUrl(link.url);
     anchor.target = '_blank';
-    anchor.rel = 'noopener';
+    anchor.rel = 'noopener noreferrer';
 
     const icon = document.createElement('span');
     icon.className = 'social-icon';

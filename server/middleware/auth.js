@@ -14,7 +14,9 @@ function requireAuth(req, res, next) {
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    if (decoded.role !== 'user') return res.status(403).json({ error: 'User access only' });
+    if (!['user', 'admin'].includes(decoded.role)) {
+      return res.status(403).json({ error: 'User access only' });
+    }
     req.user = decoded;
     return next();
   } catch (error) {
