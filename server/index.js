@@ -21,6 +21,7 @@ app.use(cors());
 app.use(express.json({ limit: '2mb' }));
 
 app.use('/assets', express.static(path.join(__dirname, '..', 'public', 'assets')));
+app.use('/css', express.static(path.join(__dirname, '..', 'public', 'css')));
 app.use('/components', express.static(path.join(__dirname, '..', 'public', 'components')));
 
 function signToken(payload) {

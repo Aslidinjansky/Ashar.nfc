@@ -4,13 +4,13 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Ashar.nfc | Premium NFC Experiences</title>
-    <link rel="stylesheet" href="css/style.css" />
+    <link rel="stylesheet" href="/css/style.css" />
   </head>
   <body>
     <div class="page">
       <header class="hero">
         <div class="hero__glow"></div>
-        <img src="assets/logo.svg" alt="Ashar.nfc logo" class="hero__logo" />
+        <img src="/assets/logo.svg" alt="Ashar.nfc logo" class="hero__logo" />
         <p class="hero__eyebrow">NEXT-GEN NFC BUSINESS CARDS</p>
         <h1 class="hero__title">Tap into a luxurious first impression.</h1>
         <p class="hero__copy">
@@ -58,7 +58,7 @@
     </div>
 
     <script>
-      fetch('components/footer.html')
+      fetch('/components/footer.html')
         .then((response) => response.text())
         .then((html) => {
           const footerTarget = document.getElementById('footer-placeholder');
