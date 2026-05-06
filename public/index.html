@@ -72,7 +72,10 @@
           }
         })
         .catch((error) => {
-          console.warn('Unable to load footer component.', error);
+          console.warn(
+            'Failed to load footer from /components/footer.html. Check network connectivity or server configuration.',
+            error
+          );
         });
     </script>
   </body>
